@@ -69,6 +69,7 @@ int main()
      */
     readStdIn(&allTiles);
     if (errMsg) { goto err1; }
+    if (allTiles.amount == 0) { goto err2; }
     
     /* Sort input and build structure
      *
@@ -96,6 +97,7 @@ int main()
         printResult(&allTiles);
     }
 
+err2:
 err1:
     free(allTiles.tiles);
 err0:
