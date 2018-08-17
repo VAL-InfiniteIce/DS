@@ -102,7 +102,8 @@ err1:
     free(allTiles.tiles);
 err0:
     if (errMsg != NULL) { fprintf(stderr, errMsg, errData); }
-
+    
+    // */
     return errMsg != NULL;
 }
 
@@ -192,7 +193,7 @@ int findAugmentedPath(allTiles_t * allTiles, tile_t* begin, tile_t*** p_tree, ti
     // 1 No Path
     unsigned int length = 8;
     tile_t ** tree = (tile_t**) realloc(*p_tree, length * sizeof(tile_t*));
-    if (!tree) { errMsg = (err) exceedMem; return -1; }
+    if (!tree) { errMsg = (err) exceedMem; *p_tree[0] = NULL; return -1; }
     *p_tree = tree;
 
     unsigned int i = 0;
@@ -248,11 +249,11 @@ int findAugmentedPath(allTiles_t * allTiles, tile_t* begin, tile_t*** p_tree, ti
                 path[copyindex+1] = path[copyindex]->parent;
             } while (path[++copyindex]->parent);
             path[copyindex+1] = NULL;
+            tree[j] = NULL;
         }
     } else {
         if (error == -1) { errMsg = (err) exceedMem; }
     }
-    tree[j] = NULL;
     return error;
 }
 
@@ -265,16 +266,20 @@ int findCoverage(allTiles_t * allTiles)
         tile_t** tree = (tile_t**) malloc(sizeof(tile_t*));
         tile_t** path = (tile_t**) malloc(sizeof(tile_t*));
 
-        if (!path) { errMsg = (err) exceedMem; return -1; }
+        if (!tree) { errMsg = (err) exceedMem; return -1; }
+        if (!path) { errMsg = (err) exceedMem; free(tree); return -1; }
 
         result = findAugmentedPath(allTiles, &allTiles->tiles[i], &tree, &path);
-        if( !result ) { flipPath(path); }
+        if( !result )
+        {
+            flipPath(path); 
+            resetTree(tree);
+        }
 
-
-        resetTree(tree);
-        free(tree);
         free(path);
+        free(tree);
 
+        if (result < 0) { break; }
     }
 
     return result;
